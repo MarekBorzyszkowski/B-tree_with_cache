@@ -1,29 +1,42 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "Btree.h"
+#include <stdio.h>
 
 Btree::Btree(int order)
 	:order(order),
 	root(new Node(true, order, nullptr)) {}
 
+int Btree::getOrder() const {
+	return order;
+}
+
 Node* Btree::getRoot() const {
 	return root;
 }
 
-int Btree::prepareNodeForInsertion(Node* node, int key) {
-	int index = node->keysAmount - 1;
-	while (index >= 0 && key < node->keys[index]) {
-		node->keys[index + 1] = node->keys[index];
-		index--;
-	}
-	return index;
-}
+//int Btree::prepareNodeForInsertion(Node* node, int key) {
+//	int index = node->keysAmount - 1;
+//	while (index >= 0 && key < node->keys[index]) {
+//		node->keys[index + 1] = node->keys[index];
+//		index--;
+//	}
+//	return index;
+//}
 
 void Btree::insertNonfull(Node* node, int key) {
-	int index = prepareNodeForInsertion(node, key);
+	int index = node->keysAmount - 1;
 	if (node->isItLeaf) {
+		while (index >= 0 && key < node->keys[index]) {
+			node->keys[index + 1] = node->keys[index];
+			index--;
+		}
 		node->keys[index + 1] = key;
 		node->keysAmount++;
 	}
 	else {
+		while (index >= 0 && key < node->keys[index]) {
+			index--;
+		}
 		index++;
 		if (node->children[index]->keysAmount == 2 * order - 1) {
 			splitChild(node, index, node->children[index]);
@@ -101,6 +114,72 @@ void Btree::deleteNode(Node* node) {
 		delete node;
 	}
 }
+
+void Btree::print(Node* node) {
+	if (node->isItLeaf) {
+		for (int i = 0; i < node->keysAmount; i++) {
+			printf("%d ", node->keys[i]);
+		}
+	}
+	else {
+		for (int i = 0; i < node->keysAmount; i++) {
+			print(node->children[i]);
+			printf("%d ", node->keys[i]);
+		}
+		print(node->children[node->keysAmount]);
+	}
+}
+
+void Btree::load(int order) {
+	deleteNode(root);
+	this->order = order;
+	root = new Node(true, this->order, nullptr);
+	Node* currNode = root;
+	int number;
+	char input[100] = "(";
+	int height = 1;
+	scanf("%s", input);
+	while (!(input[0] == ')' && height == 0)) {
+		scanf("%s", input); 
+		if (input[0] == '(') {
+			height++;
+			currNode->isItLeaf = false;
+			currNode->children[currNode->keysAmount] = new Node(true, this->order, currNode);
+			currNode = currNode->children[currNode->keysAmount];
+		}
+		else if (input[0] == ')') {
+			height--;
+			currNode = currNode->parent;
+		}
+		else {
+			sscanf(input, "%d", &number);
+			currNode->keys[currNode->keysAmount] = number;
+			currNode->keysAmount++;
+		}
+	}
+}
+
+void Btree::save(Node* node) {
+	printf("( ");
+	if (node->isItLeaf) {
+		for (int i = 0; i < node->keysAmount; i++) {
+			printf("%d ", node->keys[i]);
+		}
+		printf(")");
+	}
+	else {
+		for (int i = 0; i < node->keysAmount; i++) {
+			save(node->children[i]);
+			printf(" %d ", node->keys[i]);
+		}
+		save(node->children[node->keysAmount]);
+		printf(" )");
+	}
+}
+//
+//int Btree::deleteKey(int key) {
+//
+//}
 
 Btree::~Btree() {
 	deleteNode(root);

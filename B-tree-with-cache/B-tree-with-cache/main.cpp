@@ -7,8 +7,8 @@ enum {
 	INSERT,
 	SEARCH,
 	PRINT,
-	INPORT,
-	EXPORT,
+	LOAD,
+	SAVE,
 	REMOVE,
 	CACHE,
 	IGNORE,
@@ -21,8 +21,8 @@ int parseEnum(char cmd) {
 		cmd == 'A' ? INSERT :
 		cmd == '?' ? SEARCH :
 		cmd == 'P' ? PRINT :
-		cmd == 'L' ? INPORT :
-		cmd == 'S' ? EXPORT :
+		cmd == 'L' ? LOAD :
+		cmd == 'S' ? SAVE :
 		cmd == 'R' ? REMOVE :
 		cmd == 'C' ? CACHE :
 		cmd == '#' ? IGNORE :
@@ -53,6 +53,24 @@ int main() {
 				printf("%d +\n", input);
 			}
 			else printf("%d -\n", input);
+			break;
+		}
+		case PRINT:{
+			tree->print(tree->getRoot());
+			printf("\n");
+			break;
+		}
+		case LOAD: {
+			scanf("%d", &input);
+			if (tree != nullptr) delete tree;
+			tree = new Btree(input);
+			tree->load(input);
+			break;
+		}
+		case SAVE: {
+			printf("%d\n", tree->getOrder());
+			tree->save(tree->getRoot());
+			printf("\n");
 			break;
 		}
 		case IGNORE: {
