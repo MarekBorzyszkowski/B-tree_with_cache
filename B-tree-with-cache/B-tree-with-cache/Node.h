@@ -10,6 +10,7 @@ public:
 	Node* parent;
 
 	Node(bool isItLeaf, int order, Node* parent);
+	~Node();
 };
 
 

@@ -7,12 +7,20 @@ class Btree {
 private:
 	int order;
 	Node* root;
+	
+	int prepareNodeForInsertion(Node* node, int key);
+
+	void insertNonfull(Node* node, int key);
+	void splitChild(Node* parent, int childIndex, Node* child);
+	void deleteNode(Node* node);
+
 public:
 	Btree(int order);
+	Node* getRoot() const;
 	void insert(int key);
-	void splitChild(Node* parent, int childIndex, Node* child);
-	void insertNonfull(Node* node, int key);
+	int search(Node* node, int key, int &height);
+	~Btree();
 };
 
 
-#endif // !BT
+#endif
