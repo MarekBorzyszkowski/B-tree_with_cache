@@ -23,6 +23,7 @@ public:
 	void print(Node* node);
 	void load(int order);
 	void save(Node* node);
+	void deleteKey(int key);
 	~Btree();
 };
 
