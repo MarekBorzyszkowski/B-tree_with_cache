@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "Btree.h"
+#include "FIFOQ.h"
 #include <stdio.h>
 
 enum {
@@ -29,11 +30,38 @@ int parseEnum(char cmd) {
 		cmd == 'X' ? END : ERROR;
 }
 
+char searchComparison(Btree* tree) {
+	char num[100];
+	int cacheSteps, normalSteps, step, valueToFind, cacheLength;
+	cacheSteps = normalSteps = 0;
+	scanf("%d", &cacheLength);
+	FIFOQ cache(cacheLength);
+	while (scanf("%s", num)) {
+		if (num[0] > '9' || num[0] < '0') {
+			printf("NO CACHE: %d CACHE: %d\n", normalSteps, cacheSteps);
+			return num[0];
+		}
+		step = 1;
+		sscanf(num, "%d", &valueToFind);
+		tree->search(tree->getRoot(), valueToFind, step);
+		normalSteps += step;
+		if (!cache.search(valueToFind)) {
+			cache.pushBack(valueToFind);
+			cacheSteps += step;
+		}
+	}
+	return NULL;
+}
+
 int main() {
 	Btree* tree = nullptr;
-	char action;
+	char action, priorityAction = NULL;
 	int input, height;
 	while (scanf("%c", &action) > 0) {
+		if (priorityAction) {
+			action = priorityAction;
+			priorityAction = NULL;
+		}
 		switch (parseEnum(action)) {
 		case NEW: {
 			scanf("%d", &input);
@@ -76,6 +104,10 @@ int main() {
 		case REMOVE: {
 			scanf("%d", &input);
 			tree->deleteKey(tree->getRoot(), input);
+			break;
+		}
+		case CACHE: {
+			priorityAction = searchComparison(tree);
 			break;
 		}
 		case IGNORE: {
