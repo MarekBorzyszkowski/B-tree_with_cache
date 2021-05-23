@@ -73,6 +73,11 @@ int main() {
 			printf("\n");
 			break;
 		}
+		case REMOVE: {
+			scanf("%d", &input);
+			tree->deleteKey(tree->getRoot(), input);
+			break;
+		}
 		case IGNORE: {
 			break;
 		}

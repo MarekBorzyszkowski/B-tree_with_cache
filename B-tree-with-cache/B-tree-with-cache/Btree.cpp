@@ -14,15 +14,6 @@ Node* Btree::getRoot() const {
 	return root;
 }
 
-//int Btree::prepareNodeForInsertion(Node* node, int key) {
-//	int index = node->keysAmount - 1;
-//	while (index >= 0 && key < node->keys[index]) {
-//		node->keys[index + 1] = node->keys[index];
-//		index--;
-//	}
-//	return index;
-//}
-
 void Btree::insertNonfull(Node* node, int key) {
 	int index = node->keysAmount - 1;
 	if (node->isItLeaf) {
@@ -86,11 +77,16 @@ void Btree::insert(int key) {
 	}
 }
 
-int Btree::search(Node* node, int key, int &height) {
+int Btree::findKeyInNode(Node* node, int key) {
 	int index = 0;
 	while (index < node->keysAmount && key > node->keys[index]) {
 		index++;
 	}
+	return index;
+}
+
+int Btree::search(Node* node, int key, int &height) {
+	int index = findKeyInNode(node, key);
 	if (index < node->keysAmount && key == node->keys[index]) {
 		return height;
 	}
@@ -176,10 +172,162 @@ void Btree::save(Node* node) {
 		printf(" )");
 	}
 }
-//
-//int Btree::deleteKey(int key) {
-//
-//}
+
+void Btree::margeNodes(Node* node1, Node* node2, int key) {
+	node1->keys[order - 1] = key;
+	for (int i = 0; i < order-1; i++) {
+		node1->keys[i + order] = node2->keys[i];
+	}
+	if (!node1->isItLeaf) {
+		for (int i = 0; i < order; i++) {
+			node1->children[i + order] = node2->children[i];
+		}
+	}
+	node1->keysAmount = 2 * order - 1;
+	delete node2;
+}
+
+void Btree::deleteKey(Node* node, int key) {
+	int index = findKeyInNode(node, key);
+	bool found = false;
+	if (index < node->keysAmount && key == node->keys[index]) {
+		found = true;
+	}
+	if (found && node->isItLeaf) {
+		for (int i = index; i < node->keysAmount - 1; i++) {
+			node->keys[i] = node->keys[i + 1];
+		}
+		node->keysAmount--;
+		return;
+	}
+	else if (node->isItLeaf) {
+		return;
+	}
+	else if (found) {
+		Node* beforeKey = node->children[index];
+		Node* afterKey = node->children[index+1];
+		if (beforeKey->keysAmount >= order) {
+			node->keys[index] = beforeKey->keys[beforeKey->keysAmount-1];
+			deleteKey(beforeKey, beforeKey->keys[beforeKey->keysAmount - 1]);
+		}
+		else if (afterKey->keysAmount >= order) {
+			node->keys[index] = afterKey->keys[afterKey->keysAmount - 1];
+			deleteKey(afterKey, afterKey->keys[afterKey->keysAmount - 1]);
+		}
+		else {
+			margeNodes(beforeKey, afterKey, key);
+			for (int i = index; i < node->keysAmount-1; i++) {
+				node->keys[i] = node->keys[i + 1];
+			}
+			for (int i = index+1; i < node->keysAmount; i++) {
+				node->children[i] = node->children[i+1];
+			}
+			node->keysAmount--;
+			deleteKey(beforeKey, key);
+		}
+	}
+	else {
+		Node* child = node->children[index];
+		Node* leftBrother,* rightBrother;
+		leftBrother = rightBrother = nullptr;
+		if (child->keysAmount >= order) {
+			deleteKey(child, key);
+		}
+		else {
+			if (index < node->keysAmount) {
+				rightBrother = node->children[index + 1];
+				if (rightBrother->keysAmount >= order) {
+					child->keys[child->keysAmount] = node->keys[index];
+					node->keys[index] = rightBrother->keys[0];
+					for (int i = 0; i < rightBrother->keysAmount - 1; i++) {
+						rightBrother->keys[i] = rightBrother->keys[i + 1];
+					}
+					if (!child->isItLeaf) {
+						for (int i = 0; i < rightBrother->keysAmount; i++) {
+							rightBrother->children[i] = rightBrother->children[i + 1];
+						}
+						child->children[child->keysAmount + 1] = rightBrother->children[0];
+					}
+					rightBrother->keysAmount--;
+					child->keysAmount++;
+					deleteKey(child, key);
+					child = leftBrother = rightBrother = nullptr;
+				}
+				else {
+					child->keys[order - 1] = node->keys[index];
+					for (int i = 0; i < order - 1; i++) {
+						child->keys[i + order] = rightBrother->keys[i];
+					}
+					if (!child->isItLeaf) {
+						for (int i = 0; i < order; i++) {
+							child->children[i + order] = rightBrother->children[i];
+						}
+					}
+					for (int i = index; i < node->keysAmount-1; i++) {
+						node->keys[i] = node->keys[i + 1];
+						node->children[i + 1] = node->children[i + 2];
+					}
+					node->keysAmount--;
+					if (node == root && node->keysAmount == 0) {
+						delete root;
+						root = child;
+						child->parent = nullptr;
+					}
+					child->keysAmount = 2 * order - 1;
+					delete rightBrother;
+					deleteKey(child, key);
+					child = leftBrother = rightBrother = nullptr;
+				}
+			}
+			else if (index > 0) {
+				leftBrother = node->children[index - 1];
+				if (leftBrother->keysAmount >= order) {
+					for (int i = child->keysAmount - 1; i >= 0; i--) {
+						child->keys[i + 1] = child->keys[i];
+					}
+					if (!child->isItLeaf) {
+						for (int i = child->keysAmount; i >= 0; i--) {
+							child->children[i + 1] = child->children[i];
+						}
+						child->children[0] = leftBrother->children[leftBrother->keysAmount];
+					}
+					child->keys[0] = node->keys[index - 1];
+					node->keys[index - 1] = leftBrother->keys[leftBrother->keysAmount - 1];
+					leftBrother->keysAmount--;
+					child->keysAmount++;
+					deleteKey(child, key);
+					child = leftBrother = nullptr;
+				}
+				else {
+
+					leftBrother->keys[order - 1] = node->keys[index-1];
+					for (int i = 0; i < order - 1; i++) {
+						leftBrother->keys[i + order] = child->keys[i];
+					}
+					if (!child->isItLeaf) {
+						for (int i = 0; i < order; i++) {
+							leftBrother->children[i + order] = child->children[i];
+						}
+					}
+					for (int i = index-1; i < node->keysAmount - 1; i++) {
+						node->keys[i] = node->keys[i + 1];
+						node->children[i + 1] = node->children[i + 2];
+					}
+					node->keysAmount--;
+					if (node == root && node->keysAmount == 0) {
+						delete root;
+						root = leftBrother;
+						leftBrother->parent = nullptr;
+					}
+					leftBrother->keysAmount = 2 * order - 1;
+					delete child;
+					deleteKey(leftBrother, key);
+					child = leftBrother = rightBrother = nullptr;
+				}
+			}
+		}
+	}
+}
 
 Btree::~Btree() {
 	deleteNode(root);

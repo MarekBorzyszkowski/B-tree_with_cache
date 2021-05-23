@@ -8,11 +8,11 @@ private:
 	int order;
 	Node* root;
 	
-	//int prepareNodeForInsertion(Node* node, int key);
-
 	void insertNonfull(Node* node, int key);
 	void splitChild(Node* parent, int childIndex, Node* child);
 	void deleteNode(Node* node);
+	int findKeyInNode(Node* node, int key);
+	void margeNodes(Node* node1, Node* node2, int key);
 
 public:
 	Btree(int order);
@@ -23,7 +23,7 @@ public:
 	void print(Node* node);
 	void load(int order);
 	void save(Node* node);
-	void deleteKey(int key);
+	void deleteKey(Node* node, int key);
 	~Btree();
 };
 
