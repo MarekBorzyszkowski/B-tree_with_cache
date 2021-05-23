@@ -211,8 +211,8 @@ void Btree::deleteKey(Node* node, int key) {
 			deleteKey(beforeKey, beforeKey->keys[beforeKey->keysAmount - 1]);
 		}
 		else if (afterKey->keysAmount >= order) {
-			node->keys[index] = afterKey->keys[afterKey->keysAmount - 1];
-			deleteKey(afterKey, afterKey->keys[afterKey->keysAmount - 1]);
+			node->keys[index] = afterKey->keys[0];
+			deleteKey(afterKey, afterKey->keys[0]);
 		}
 		else {
 			margeNodes(beforeKey, afterKey, key);
