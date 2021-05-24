@@ -187,6 +187,24 @@ void Btree::margeNodes(Node* node1, Node* node2, int key) {
 	delete node2;
 }
 
+int Btree::findLargestKey(Node* node) {
+	if (!node->isItLeaf) {
+		return findLargestKey(node->children[node->keysAmount]);
+	}
+	else {
+		return node->keys[node->keysAmount - 1];
+	}
+}
+
+int Btree::findSmallestKey(Node* node) {
+	if (!node->isItLeaf) {
+		return findSmallestKey(node->children[0]);
+	}
+	else {
+		return node->keys[0];
+	}
+}
+
 void Btree::deleteKey(Node* node, int key) {
 	int index = findKeyInNode(node, key);
 	bool found = false;
@@ -206,13 +224,16 @@ void Btree::deleteKey(Node* node, int key) {
 	else if (found) {
 		Node* beforeKey = node->children[index];
 		Node* afterKey = node->children[index+1];
+		int newKey;
 		if (beforeKey->keysAmount >= order) {
-			node->keys[index] = beforeKey->keys[beforeKey->keysAmount-1];
-			deleteKey(beforeKey, beforeKey->keys[beforeKey->keysAmount - 1]);
+			newKey = findLargestKey(beforeKey);
+			node->keys[index] = newKey;
+			deleteKey(beforeKey, newKey);
 		}
 		else if (afterKey->keysAmount >= order) {
-			node->keys[index] = afterKey->keys[0];
-			deleteKey(afterKey, afterKey->keys[0]);
+			newKey = findSmallestKey(afterKey);
+			node->keys[index] = newKey;
+			deleteKey(afterKey, newKey);
 		}
 		else {
 			margeNodes(beforeKey, afterKey, key);
@@ -225,6 +246,7 @@ void Btree::deleteKey(Node* node, int key) {
 			node->keysAmount--;
 			deleteKey(beforeKey, key);
 		}
+		afterKey = beforeKey = nullptr;
 	}
 	else {
 		Node* child = node->children[index];

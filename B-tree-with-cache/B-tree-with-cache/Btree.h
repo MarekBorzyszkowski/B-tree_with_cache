@@ -13,6 +13,8 @@ private:
 	void deleteNode(Node* node);
 	int findKeyInNode(Node* node, int key);
 	void margeNodes(Node* node1, Node* node2, int key);
+	int findLargestKey(Node* node);
+	int findSmallestKey(Node* node);
 
 public:
 	Btree(int order);
