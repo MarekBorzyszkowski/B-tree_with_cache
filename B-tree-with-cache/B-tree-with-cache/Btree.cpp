@@ -243,10 +243,10 @@ void Btree::deleteKey(Node* node, int key) {
 						rightBrother->keys[i] = rightBrother->keys[i + 1];
 					}
 					if (!child->isItLeaf) {
+						child->children[child->keysAmount + 1] = rightBrother->children[0];
 						for (int i = 0; i < rightBrother->keysAmount; i++) {
 							rightBrother->children[i] = rightBrother->children[i + 1];
 						}
-						child->children[child->keysAmount + 1] = rightBrother->children[0];
 					}
 					rightBrother->keysAmount--;
 					child->keysAmount++;
@@ -328,6 +328,7 @@ void Btree::deleteKey(Node* node, int key) {
 		}
 	}
 }
+
 
 Btree::~Btree() {
 	deleteNode(root);
