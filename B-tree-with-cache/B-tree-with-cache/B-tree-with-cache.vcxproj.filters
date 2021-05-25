@@ -24,6 +24,9 @@
     <ClInclude Include="FIFOQ.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LRUCache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Node.cpp">
@@ -36,6 +39,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FIFOQ.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LRUCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

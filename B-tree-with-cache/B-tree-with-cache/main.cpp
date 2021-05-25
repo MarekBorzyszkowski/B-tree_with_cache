@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "Btree.h"
 #include "FIFOQ.h"
+#include "LRUCache.h"
 #include <stdio.h>
 
 enum {
@@ -36,6 +37,7 @@ char searchComparison(Btree* tree) {
 	cacheSteps = normalSteps = 0;
 	scanf("%d", &cacheLength);
 	FIFOQ cache(cacheLength);
+	//LRUCache cache(cacheLength);
 	while (scanf("%s", num)) {
 		if (num[0] > '9' || num[0] < '0') {
 			printf("NO CACHE: %d CACHE: %d\n", normalSteps, cacheSteps);
@@ -49,6 +51,9 @@ char searchComparison(Btree* tree) {
 			cache.pushBack(valueToFind);
 			cacheSteps += step;
 		}
+		//if (!cache.search(valueToFind)) {
+		//	cacheSteps += step;
+		//}
 	}
 	return NULL;
 }
